@@ -1,4 +1,4 @@
-package p4.database;
+package p4;
 
 import p4.database.adres.AdresDAO;
 import p4.database.adres.AdresDAOPsql;

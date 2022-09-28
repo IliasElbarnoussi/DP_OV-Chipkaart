@@ -7,11 +7,11 @@ public class Product {
     private int product_nummer;
     private String naam;
     private String beschrijving;
-    private int prijs;
+    private double prijs;
 
     private List<OVChipkaart> ovchipkaarten = new ArrayList<>();
 
-    public Product(int product_nummer, String naam, String beschrijving, int prijs) {
+    public Product(int product_nummer, String naam, String beschrijving, double prijs) {
         this.product_nummer = product_nummer;
         this.naam = naam;
         this.beschrijving = beschrijving;
@@ -46,7 +46,7 @@ public class Product {
         this.beschrijving = beschrijving;
     }
 
-    public int getPrijs() {
+    public double getPrijs() {
         return prijs;
     }
 

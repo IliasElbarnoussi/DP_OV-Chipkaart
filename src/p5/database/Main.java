@@ -3,10 +3,13 @@ package p5.database;
 import p5.database.adres.AdresDAO;
 import p5.database.ovchipkaart.OVChipkaartDAO;
 import p5.database.ovchipkaart.OVChipkaartDAOPsql;
+import p5.database.product.ProductDAO;
+import p5.database.product.ProductDAOPsql;
 import p5.database.reiziger.ReizigerDAO;
 import p5.database.reiziger.ReizigerDAOPsql;
 import p5.domein.Adres;
 import p5.domein.OVChipkaart;
+import p5.domein.Product;
 import p5.domein.Reiziger;
 
 import java.sql.Connection;
@@ -24,8 +27,10 @@ public class Main {
         ReizigerDAOPsql rdaopsql = new ReizigerDAOPsql(connection);
 //        AdresDAOPsql adoapsql = new AdresDAOPsql(connection, rdaopsql);
         OVChipkaartDAOPsql ovdaosql = new OVChipkaartDAOPsql(connection, rdaopsql);
+        ProductDAOPsql pdaosql = new ProductDAOPsql(connection);
 
-        testOVChipkaartDAO(ovdaosql);
+        testProductDAO(pdaosql);
+//        testOVChipkaartDAO(ovdaosql);
         closeConnection();
 //        testReizigerDAO(rdaopsql);
 //        testAdresDAO(adoapsql);
@@ -39,6 +44,17 @@ public class Main {
 
     private static void closeConnection() throws SQLException {
         connection.close();
+    }
+
+    private static void testProductDAO(ProductDAO pdao) {
+        System.out.println("\n---------- Test ProductDAO -------------");
+
+        System.out.println("[Test] ProductDAO.findAll() geeft de volgende Producten:");
+        List<Product> producten = pdao.findAll();
+        for (Product product : producten) {
+            System.out.println(product);
+        }
+        System.out.println("Er staan " + producten.size() + " producten in de database\n");
     }
 
     private static void testOVChipkaartDAO(OVChipkaartDAO ovdao) {

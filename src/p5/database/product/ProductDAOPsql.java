@@ -18,14 +18,13 @@ public class ProductDAOPsql implements ProductDAO{
     @Override
     public boolean save(Product product) {
         try {
-
             String query = "INSERT INTO product " + "(product_nummer, naam, beschrijving, prijs) VALUES " +
                     "(?, ?, ?, ?);";
             PreparedStatement prst = connection.prepareStatement(query);
             prst.setInt(1, product.getProduct_nummer());
             prst.setString(2, product.getNaam());
             prst.setString(3, product.getBeschrijving());
-            prst.setInt(4, product.getPrijs());
+            prst.setDouble(4, product.getPrijs());
             prst.executeUpdate();
 
             for (OVChipkaart ovChipkaart : product.getOvchipkaarten()) {
@@ -50,7 +49,7 @@ public class ProductDAOPsql implements ProductDAO{
         try {
             String query = "UPDATE product " + "SET prijs = ? WHERE product_nummer = ?";
             PreparedStatement prst = connection.prepareStatement(query);
-            prst.setInt(1, product.getPrijs());
+            prst.setDouble(1, product.getPrijs());
             prst.setInt(2, product.getProduct_nummer());
 
             prst.executeUpdate();
@@ -112,26 +111,28 @@ public class ProductDAOPsql implements ProductDAO{
     @Override
     public List<Product> findAll() {
         try {
-            String query = "SELECT * FROM product";
+            String query = "SELECT * FROM product;";
             PreparedStatement prst = connection.prepareStatement(query);
 
             ResultSet rs = prst.executeQuery(query);
-
+            System.out.println("TEST2");
             List<Product> producten = new ArrayList<>();
+
             while (rs.next()) {
                 int product_nummer = rs.getInt("product_nummer");
                 String naam = rs.getString("naam");
                 String beschrijving = rs.getString("beschrijving");
-                int prijs = rs.getInt("prijs");
+                double prijs = rs.getDouble("prijs");
 
                 producten.add(new Product(product_nummer, naam, beschrijving, prijs));
             }
 
+
             for (Product product : producten) {
-                query = "SELECT ov_chipkaart_product.product_nummer, ov_chipkaart.kaart_nummer, geldig_tot, klasse, saldo FROM ov_chipkaart_product JOIN ov_chipkaart ON ov_chipkaart.kaart_nummer = ov_chipkaart_product.kaart_nummer AND ov_chipkaart_product.product_nummer = ?;";
-                prst = connection.prepareStatement(query);
+                String query2 = "SELECT ov_chipkaart_product.product_nummer, ov_chipkaart.kaart_nummer, geldig_tot, klasse, saldo FROM ov_chipkaart_product" + " JOIN ov_chipkaart ON ov_chipkaart.kaart_nummer = ov_chipkaart_product.kaart_nummer AND ov_chipkaart_product.product_nummer = ?";
+                prst = connection.prepareStatement(query2);
                 prst.setInt(1, product.getProduct_nummer());
-                rs = prst.executeQuery(query);
+                rs = prst.executeQuery(query2);
 
                 while (rs.next()) {
                     int kaart_nummer = rs.getInt("kaart_nummer");

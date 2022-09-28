@@ -2,6 +2,7 @@ package p5.database.ovchipkaart;
 
 import p5.database.reiziger.ReizigerDAO;
 import p5.domein.OVChipkaart;
+import p5.domein.Product;
 import p5.domein.Reiziger;
 
 import java.sql.*;
@@ -33,6 +34,16 @@ public class OVChipkaartDAOPsql implements OVChipkaartDAO {
 
             int results = prst.executeUpdate();
             if (results < 1) return false;
+
+            for (Product product : ovchipkaart.getProducten()) {
+                query = "INSERT INTO ov_chipkaart_product" + "(product_nummer, kaart_nummer) VALUES " +
+                        "(?, ?);";
+                prst = conn.prepareStatement(query);
+                prst.setInt(1, product.getProduct_nummer());
+                prst.setInt(2, ovchipkaart.getKaart_nummer());
+                prst.executeUpdate();
+            }
+
 
             prst.close();
             return true;
@@ -131,6 +142,22 @@ public class OVChipkaartDAOPsql implements OVChipkaartDAO {
                 int reiziger_id = rs.getInt("reiziger_id");
 
                 alleOVChipkaarten.add(new OVChipkaart(kaart_nummer, geldig_tot, klasse, saldo, reiziger_id));
+            }
+
+
+            for (OVChipkaart ovchipkaart : alleOVChipkaarten) {
+                query = "SELECT ov_chipkaart_product.product_nummer, ov_chipkaart.kaart_nummer, geldig_tot, klasse, saldo FROM ov_chipkaart_product JOIN ov_chipkaart ON ov_chipkaart.kaart_nummer = ov_chipkaart_product.kaart_nummer AND ov_chipkaart_product.product_nummer = ?;";
+                prst = conn.prepareStatement(query);
+                prst.setInt(1, ovchipkaart.getKaart_nummer());
+                rs = prst.executeQuery(query);
+
+                while (rs.next()) {
+                    int product_nummer = rs.getInt("product_nummer");
+                    String naam = rs.getString("naam");
+                    String beschrijving = rs.getString("beschrijving");
+                    int prijs = rs.getInt("prijs");
+                    ovchipkaart.voegProductToe(new Product(product_nummer, naam, beschrijving, prijs));
+                }
             }
 
             prst.close();
