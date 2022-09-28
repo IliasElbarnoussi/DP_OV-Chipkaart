@@ -1,8 +1,8 @@
-package p4.database.reiziger;
+package p5.database.reiziger;
 
-import p4.database.adres.AdresDAO;
-import p4.domein.Adres;
-import p4.domein.Reiziger;
+import p5.database.adres.AdresDAO;
+import p5.domein.Adres;
+import p5.domein.Reiziger;
 
 import java.sql.*;
 import java.util.ArrayList;
