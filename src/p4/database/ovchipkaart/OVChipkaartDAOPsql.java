@@ -1,36 +1,32 @@
 package p4.database.ovchipkaart;
 
-import p4.database.reiziger.ReizigerDAO;
+import p4.database.factory.ConnectionFactory;
+import p4.database.factory.DAOFactory;
 import p4.domein.OVChipkaart;
 import p4.domein.Reiziger;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.List;
 
 public class OVChipkaartDAOPsql implements OVChipkaartDAO{
-    Connection conn;
-    ReizigerDAO rdao;
-
-    public OVChipkaartDAOPsql(Connection connection, ReizigerDAO rdao) {
-        this.conn = connection;
-        this.rdao = rdao;
+    private Connection connection;
+    DAOFactory df;
+    public OVChipkaartDAOPsql(DAOFactory df) {
+        this.df = df;
+        this.connection = ConnectionFactory.getConnection();
     }
 
-    public void setRdao(ReizigerDAO rdao) {
-        this.rdao = rdao;
-    }
 
     @Override
     public boolean save(OVChipkaart ovchipkaart) {
         try {
             String query = "INSERT INTO ov_chipkaart VALUES(?, ?, ?, ?, ?)";
-            PreparedStatement prst = conn.prepareStatement(query);
+            PreparedStatement prst = connection.prepareStatement(query);
             prst.setInt(1, ovchipkaart.getKaart_nummer());
             prst.setDate(2, ovchipkaart.geldig_tot);
             prst.setInt(3, ovchipkaart.getKlasse());
             prst.setInt(4, ovchipkaart.getSaldo());
-            prst.setInt(5, ovchipkaart.getReiziger_id());
+            prst.setInt(5, ovchipkaart.getReiziger().getId());
 
             int results = prst.executeUpdate();
             if (results < 1) return false;
@@ -48,7 +44,7 @@ public class OVChipkaartDAOPsql implements OVChipkaartDAO{
     public ArrayList<OVChipkaart> findByReiziger(Reiziger reiziger) {
         try {
             String query = "SELECT * FROM ov_chipkaart WHERE reiziger_id = ?";
-            PreparedStatement prst = conn.prepareStatement(query);
+            PreparedStatement prst = connection.prepareStatement(query);
             prst.setInt(1, reiziger.getId());
 
             ResultSet rs = prst.executeQuery();
@@ -59,9 +55,8 @@ public class OVChipkaartDAOPsql implements OVChipkaartDAO{
                 Date geldig_tot = rs.getDate("geldig_tot");
                 int klasse = rs.getInt("klasse");
                 int saldo = rs.getInt("saldo");
-                int reiziger_id = rs.getInt("reiziger_id");
 
-                alleOVChipkaarten.add(new OVChipkaart(kaart_nummer, geldig_tot, klasse, saldo, reiziger_id));
+                alleOVChipkaarten.add(new OVChipkaart(kaart_nummer, geldig_tot, klasse, saldo, reiziger));
             }
 
             prst.close();
@@ -79,7 +74,7 @@ public class OVChipkaartDAOPsql implements OVChipkaartDAO{
     public boolean update(OVChipkaart ovchipkaart) {
         try {
             String query = "UPDATE ov_chipkaart SET saldo = ? WHERE kaart_nummer = ?";
-            PreparedStatement prst = conn.prepareStatement(query);
+            PreparedStatement prst = connection.prepareStatement(query);
 
             prst.setInt(1, ovchipkaart.getSaldo());
             prst.setInt(2, ovchipkaart.getKaart_nummer());
@@ -101,7 +96,7 @@ public class OVChipkaartDAOPsql implements OVChipkaartDAO{
     public boolean delete(OVChipkaart ovchipkaart) {
         try {
             String query = "DELETE FROM ov_chipkaart WHERE kaart_nummer = ?";
-            PreparedStatement prst = conn.prepareStatement(query);
+            PreparedStatement prst = connection.prepareStatement(query);
 
             prst.setInt(1, ovchipkaart.getKaart_nummer());
 
@@ -120,7 +115,7 @@ public class OVChipkaartDAOPsql implements OVChipkaartDAO{
     public ArrayList<OVChipkaart> findAll() {
         try {
             String query = "SELECT * FROM ov_chipkaart";
-            PreparedStatement prst = conn.prepareStatement(query);
+            PreparedStatement prst = connection.prepareStatement(query);
             ResultSet rs = prst.executeQuery();
 
             ArrayList<OVChipkaart> alleOVChipkaarten = new ArrayList<>();
@@ -131,7 +126,7 @@ public class OVChipkaartDAOPsql implements OVChipkaartDAO{
                 int saldo = rs.getInt("saldo");
                 int reiziger_id = rs.getInt("reiziger_id");
 
-                alleOVChipkaarten.add(new OVChipkaart(kaart_nummer, geldig_tot, klasse, saldo, reiziger_id));
+                alleOVChipkaarten.add(new OVChipkaart(kaart_nummer, geldig_tot, klasse, saldo, null));
             }
 
             prst.close();

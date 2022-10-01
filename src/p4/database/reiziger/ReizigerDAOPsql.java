@@ -1,7 +1,8 @@
 package p4.database.reiziger;
 
-import p4.database.adres.AdresDAO;
+import p4.database.factory.DAOFactory;
 import p4.domein.Adres;
+import p4.domein.OVChipkaart;
 import p4.domein.Reiziger;
 
 import java.sql.*;
@@ -10,26 +11,25 @@ import java.util.List;
 
 public class ReizigerDAOPsql implements ReizigerDAO {
     private Connection connection;
-    private AdresDAO adoa;
+    DAOFactory df;
 
-    public ReizigerDAOPsql(Connection connection) {
-        this.connection = connection;
+    public ReizigerDAOPsql(DAOFactory df) {
+        this.df = df;
+        this.connection = df.getConn();
     }
 
     @Override
     public boolean save(Reiziger reiziger) {
         try {
-
             String query = "INSERT INTO reiziger " + "(reiziger_id, voorletters, tussenvoegsel, achternaam, geboortedatum) VALUES " +
                     "(?, ?, ?, ?, ?);";
-            PreparedStatement prst = connection.prepareStatement(query);
+            PreparedStatement prst = df.getConn().prepareStatement(query);
             prst.setInt(1, reiziger.getId());
             prst.setString(2, reiziger.getVoorletters());
             prst.setString(3, reiziger.getTussenvoegsel());
             prst.setString(4, reiziger.getAchternaam());
             prst.setDate(5, reiziger.getGeboortedatum());
 
-            System.out.println(prst);
             prst.executeUpdate();
             prst.close();
             return true;
@@ -42,13 +42,15 @@ public class ReizigerDAOPsql implements ReizigerDAO {
     @Override
     public boolean update(Reiziger reiziger) {
         try {
-            String query = "UPDATE reiziger " + "SET tussenvoegsel = ? WHERE reiziger_id = ?";
-            PreparedStatement prst = connection.prepareStatement(query);
-            prst.setString(1, reiziger.getTussenvoegsel());
-            prst.setInt(2, reiziger.getId());
+            String query = "UPDATE reiziger " + "SET voorletters = ?, tussenvoegsel = ?, achternaam = ?, geboortedatum = ? WHERE reiziger_id = ?";
+            PreparedStatement prst = df.getConn().prepareStatement(query);
+            prst.setString(1, reiziger.getVoorletters());
+            prst.setString(2, reiziger.getTussenvoegsel());
+            prst.setString(3, reiziger.getAchternaam());
+            prst.setDate(4, reiziger.getGeboortedatum());
+            prst.setInt(5, reiziger.getId());
             int rowsUpdated = prst.executeUpdate();
 
-            System.out.println(rowsUpdated);
             prst.close();
             return true;
 
@@ -63,12 +65,12 @@ public class ReizigerDAOPsql implements ReizigerDAO {
     public boolean delete(Reiziger reiziger) {
         try {
             String query = "DELETE FROM reiziger WHERE reiziger_id = ?";
-            PreparedStatement prst = connection.prepareStatement(query);
+            PreparedStatement prst = df.getConn().prepareStatement(query);
             prst.setInt(1, reiziger.getId());
 
             int rowsDeleted = prst.executeUpdate();
 
-            System.out.println(rowsDeleted + " aantal reizigers verwijderd!");
+//            System.out.println(rowsDeleted + " aantal reizigers verwijderd!");
 
             prst.close();
             return true;
@@ -80,16 +82,15 @@ public class ReizigerDAOPsql implements ReizigerDAO {
     }
 
     @Override
-    public Reiziger findById(int id) {
+    public Reiziger findById(int reiziger_id) {
         try {
             String query = "SELECT * FROM reiziger WHERE reiziger_id = ?";
-            System.out.println("ID IS => " + id);
 
-            PreparedStatement prst = connection.prepareStatement(query);
-            prst.setInt(1, id);
+            PreparedStatement prst = df.getConn().prepareStatement(query);
+            prst.setInt(1, reiziger_id);
             ResultSet rs = prst.executeQuery();
 
-            int reiziger_id = 0;
+
             String voorletters = null;
             String tussenvoegsel = null;
             String achternaam = null;
@@ -104,7 +105,7 @@ public class ReizigerDAOPsql implements ReizigerDAO {
             }
 
             prst.close();
-            return new Reiziger(reiziger_id, voorletters, tussenvoegsel, achternaam, geboortedatum);
+            return new Reiziger( reiziger_id, voorletters, tussenvoegsel, achternaam, geboortedatum);
 
         } catch (SQLException e) {
             System.err.println("[SQLException] reiziger kan niet verwijderd worden uit de database: " + e);
@@ -116,7 +117,7 @@ public class ReizigerDAOPsql implements ReizigerDAO {
     public List<Reiziger> findByGbdatum(String datum) {
         try {
             String query = "SELECT * FROM reiziger WHERE geboortedatum = ?";
-            PreparedStatement prst = connection.prepareStatement(query);
+            PreparedStatement prst = df.getConn().prepareStatement(query);
             prst.setDate(1, Date.valueOf(datum));
             ResultSet rs = prst.executeQuery();
 
@@ -144,11 +145,10 @@ public class ReizigerDAOPsql implements ReizigerDAO {
     @Override
     public List<Reiziger> findAll() {
         try {
-            String query = "SELECT * FROM reiziger inner join adres on reiziger.reiziger_id = adres.reiziger_id;";
-            PreparedStatement prst = connection.prepareStatement(query);
+//            inner join adres on reiziger.reiziger_id = adres.reiziger_id;
+            String query = "SELECT * FROM reiziger";
+            PreparedStatement prst = df.getConn().prepareStatement(query);
             ResultSet rs = prst.executeQuery();
-
-
             ArrayList<Reiziger> alleReizigers = new ArrayList<>();
 
             while (rs.next()) {
@@ -160,16 +160,21 @@ public class ReizigerDAOPsql implements ReizigerDAO {
 
                 String achternaam = rs.getString("achternaam");
                 Date geboortedatum = rs.getDate("geboortedatum");
+                Reiziger reiziger = new Reiziger( reiziger_id, voorletters, tussenvoegsel, achternaam, geboortedatum);
 
-                int adres_id = rs.getInt("adres_id");
-                String postcode  = rs.getString("postcode");
-                String huisnummer = rs.getString("huisnummer");
-                String straat = rs.getString("straat");
-                String woonplaats = rs.getString("woonplaats");
+                Adres adres = df.getAdao().findByReiziger(reiziger);
+                reiziger.setAdres(adres);
 
-                Reiziger reiziger = new Reiziger(reiziger_id, voorletters, tussenvoegsel, achternaam, geboortedatum);
-                reiziger.setAdres(new Adres(adres_id, reiziger_id, postcode, huisnummer,straat, woonplaats));
+                ArrayList<OVChipkaart> alleOvchipkaarten = df.getOvdao().findByReiziger(reiziger);
+                reiziger.setAlleOVChipkaarten(alleOvchipkaarten);
+//                int adres_id = rs.getInt("adres_id");
+//                String postcode  = rs.getString("postcode");
+//                String huisnummer = rs.getString("huisnummer");
+//                String straat = rs.getString("straat");
+//                String woonplaats = rs.getString("woonplaats");
 
+
+//                reiziger.setAdres(new Adres(reiziger, adres_id, postcode, huisnummer,straat, woonplaats));
                 alleReizigers.add(reiziger);
             }
 

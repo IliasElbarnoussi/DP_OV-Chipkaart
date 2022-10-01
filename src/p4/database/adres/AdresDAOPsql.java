@@ -1,5 +1,6 @@
 package p4.database.adres;
 
+import p4.database.factory.DAOFactory;
 import p4.database.reiziger.ReizigerDAO;
 import p4.domein.Adres;
 import p4.domein.Reiziger;
@@ -12,28 +13,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AdresDAOPsql implements AdresDAO {
-    ReizigerDAO rdao;
+    DAOFactory df;
     Connection connection;
 
-    public AdresDAOPsql(Connection connection, ReizigerDAO rdaopsql) {
-        this.connection = connection;
-        this.rdao = rdaopsql;
-
+    public AdresDAOPsql(DAOFactory df) {
+        this.df = df;
+        this.connection = df.getConn();
     }
 
     @Override
     public boolean save(Adres adres) {
         try {
-
+//            String sequence = "CREATE SEQUENCE adres_id_pk START WITH 5 INCREMENT BY 1";
             String query = "INSERT INTO adres " + "(adres_id, postcode, huisnummer, straat, woonplaats, reiziger_id) VALUES " +
                     "(?, ?, ?, ?, ?, ?);";
             PreparedStatement prst = connection.prepareStatement(query);
-            prst.setInt(1, adres.getId());
+            prst.setInt(1, adres.getAdres_id());
             prst.setString(2, adres.getPostcode());
             prst.setString(3, adres.getHuisnummer());
             prst.setString(4, adres.getStraat());
             prst.setString(5, adres.getWoonplaats());
-            prst.setInt(6, adres.getReiziger_id());
+            prst.setInt(6, adres.getReiziger().getId());
 
             prst.executeUpdate();
             prst.close();
@@ -47,13 +47,15 @@ public class AdresDAOPsql implements AdresDAO {
     @Override
     public boolean update(Adres adres) {
         try {
-            String query = "UPDATE adres " + "SET postcode = ? WHERE adres_id = ?";
+            String query = "UPDATE adres " + "SET postcode = ?, straat = ?, huisnummer = ?, woonplaats = ? WHERE adres_id = ?";
             PreparedStatement prst = connection.prepareStatement(query);
             prst.setString(1, adres.getPostcode());
-            prst.setInt(2, adres.getId());
+            prst.setString(2, adres.getStraat());
+            prst.setString(3, adres.getHuisnummer());
+            prst.setString(4, adres.getWoonplaats());
+            prst.setInt(5, adres.getAdres_id());
             int rowsUpdated = prst.executeUpdate();
 
-            System.out.println(rowsUpdated);
             prst.close();
             return true;
 
@@ -69,7 +71,7 @@ public class AdresDAOPsql implements AdresDAO {
         try {
             String query = "DELETE FROM adres WHERE adres_id = ?";
             PreparedStatement prst = connection.prepareStatement(query);
-            prst.setInt(1, adres.getId());
+            prst.setInt(1, adres.getAdres_id());
 
             int rowsDeleted = prst.executeUpdate();
 
@@ -92,24 +94,24 @@ public class AdresDAOPsql implements AdresDAO {
             prst.setInt(1, reiziger.getId());
 
             ResultSet rs = prst.executeQuery();
+//            if (!rs.next()) return null;
 
             int adres_id = 0;
             String postcode = null;
             String huisnummer = null;
             String straat = null;
             String woonplaats = null;
-            int reiziger_id = 0;
+
 
             while (rs.next()) {
                 adres_id = rs.getInt("adres_id");
-                reiziger_id = rs.getInt("reiziger_id");
                 postcode = rs.getString("postcode");
                 huisnummer = rs.getString("huisnummer");
                 straat = rs.getString("straat");
                 woonplaats = rs.getString("woonplaats");
             }
 
-            return new Adres(adres_id, reiziger_id, postcode, huisnummer, straat, woonplaats);
+            return new Adres(reiziger, adres_id, postcode, huisnummer, straat, woonplaats);
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -131,13 +133,12 @@ public class AdresDAOPsql implements AdresDAO {
 
             while (rs.next()) {
                 int adres_id = rs.getInt("adres_id");
-                int reiziger_id = rs.getInt("reiziger_id");
                 String postcode = rs.getString("postcode");
                 String huisnummer = rs.getString("huisnummer");
                 String straat = rs.getString("straat");
                 String woonplaats = rs.getString("woonplaats");
 
-                alleAdressen.add(new Adres(adres_id, reiziger_id, postcode, huisnummer, straat, woonplaats));
+                alleAdressen.add(new Adres(null, adres_id, postcode, huisnummer, straat, woonplaats));
             }
 
             prst.close();

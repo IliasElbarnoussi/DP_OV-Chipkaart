@@ -1,10 +1,13 @@
 package p4.domein;
 
+import p4.database.factory.DAOFactory;
+
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Reiziger {
-    private int id;
+    private int reiziger_id;
     private String voorletters;
     private String tussenvoegsel;
     private String achternaam;
@@ -13,14 +16,44 @@ public class Reiziger {
     private Adres adres;
     private ArrayList<OVChipkaart> alleOVChipkaarten = new ArrayList<>();
 
-    public Reiziger(int id, String voorletters, String tussenvoegsel, String achternaam, Date geboortedatum) {
-        this.id = id;
+    DAOFactory df = DAOFactory.newInstance();
+
+    Random rand = new Random();
+
+    public Reiziger(int reiziger_id, String voorletters, String tussenvoegsel, String achternaam, Date geboortedatum) {
+//        this.reiziger_id = rand.nextInt(100);
+        this.reiziger_id = reiziger_id;
         this.voorletters = voorletters;
         this.tussenvoegsel = tussenvoegsel;
         this.achternaam = achternaam;
         this.geboortedatum = geboortedatum;
 
-        this.adres = null;
+    }
+
+    public OVChipkaart createNewOvchipkaart(int kaartnummer, Date datum, int klasse, int saldo) {
+        OVChipkaart ov = new OVChipkaart(kaartnummer, datum, klasse, saldo, this);
+        alleOVChipkaarten.add(ov);
+        df.getOvdao().save(ov);
+        return ov;
+    }
+
+    public void deleteOvChipkaart(int index) {
+        df.getOvdao().delete(alleOVChipkaarten.get(index));
+        this.alleOVChipkaarten.remove(index);
+    }
+
+    public Adres createNewAdres(String postcode, String huisnummer, String straat, String woonplaats) {
+        Adres adres = new Adres(this, this.getId(), postcode, huisnummer, straat, woonplaats);
+        this.adres = adres;
+        df.getAdao().save(adres);
+        return adres;
+    }
+
+    public void deleteAdres() {
+        if (adres != null) {
+            df.getAdao().delete(adres);
+            this.adres = null;
+        }
     }
 
     public Adres getAdres() {
@@ -29,14 +62,16 @@ public class Reiziger {
 
     public void setAdres(Adres adres) {
         this.adres = adres;
+        df.getRdao().update(this);
     }
 
     public int getId() {
-        return id;
+        return reiziger_id;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setId(int reiziger_id) {
+        this.reiziger_id = reiziger_id;
+        df.getRdao().update(this);
     }
 
     public String getVoorletters() {
@@ -45,6 +80,7 @@ public class Reiziger {
 
     public void setVoorletters(String voorletters) {
         this.voorletters = voorletters;
+        df.getRdao().update(this);
     }
 
     public String getTussenvoegsel() {
@@ -53,6 +89,7 @@ public class Reiziger {
 
     public void setTussenvoegsel(String tussenvoegsel) {
         this.tussenvoegsel = tussenvoegsel;
+        df.getRdao().update(this);
     }
 
     public String getAchternaam() {
@@ -61,6 +98,7 @@ public class Reiziger {
 
     public void setAchternaam(String achternaam) {
         this.achternaam = achternaam;
+        df.getRdao().update(this);
     }
 
     public Date getGeboortedatum() {
@@ -69,11 +107,27 @@ public class Reiziger {
 
     public void setGeboortedatum(Date geboortedatum) {
         this.geboortedatum = geboortedatum;
+        df.getRdao().update(this);
+    }
+
+    public ArrayList<OVChipkaart> getAlleOVChipkaarten() {
+        return alleOVChipkaarten;
+    }
+
+    public void setAlleOVChipkaarten(ArrayList<OVChipkaart> alleOVChipkaarten) {
+        this.alleOVChipkaarten = alleOVChipkaarten;
     }
 
     @Override
     public String toString() {
-        return "\nID => " + id + " " + voorletters + " " + tussenvoegsel + " " + achternaam + " " + geboortedatum + "\n" + "\t" + adres;
-
+        return "Reiziger{" +
+                "id=" + reiziger_id +
+                ", voorletters='" + voorletters + '\'' +
+                ", tussenvoegsel='" + tussenvoegsel + '\'' +
+                ", achternaam='" + achternaam + '\'' +
+                ", geboortedatum=" + geboortedatum +
+                ", adres=" + adres +
+                ", alleOVChipkaarten=" + alleOVChipkaarten +
+                '}';
     }
 }
