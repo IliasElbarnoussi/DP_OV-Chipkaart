@@ -1,36 +1,44 @@
 package p5.domein;
 
+import p5.database.factory.DAOFactory;
+
+import java.util.Random;
+
 public class Adres {
-    private int id;
-    private int reiziger_id;
+    private int adres_id;
+    private Reiziger reiziger;
     private String postcode;
     private String huisnummer;
     private String straat;
     private String woonplaats;
 
-    public Adres(int id, int reiziger_id, String postcode, String huisnummer, String straat, String woonplaats) {
-        this.id = id;
-        this.reiziger_id = reiziger_id;
+    private Random rand = new Random();
+    DAOFactory df = DAOFactory.newInstance();
+
+    public Adres(Reiziger reiziger, int adres_id, String postcode, String huisnummer, String straat, String woonplaats) {
+//        this.adres_id = rand.nextInt(1000);
+        this.adres_id = adres_id;
+        this.reiziger = reiziger;
         this.postcode = postcode;
         this.huisnummer = huisnummer;
         this.straat = straat;
         this.woonplaats = woonplaats;
     }
 
-    public int getReiziger_id() {
-        return reiziger_id;
+    public int getAdres_id() {
+        return adres_id;
     }
 
-    public void setReiziger_id(int reiziger_id) {
-        this.reiziger_id = reiziger_id;
+    public void setAdres_id(int adres_id) {
+        this.adres_id = adres_id;
     }
 
-    public int getId() {
-        return id;
+    public Reiziger getReiziger() {
+        return reiziger;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setReiziger(Reiziger reiziger) {
+        this.reiziger = reiziger;
     }
 
     public String getPostcode() {
@@ -39,6 +47,7 @@ public class Adres {
 
     public void setPostcode(String postcode) {
         this.postcode = postcode;
+        df.getAdao().update(this);
     }
 
     public String getHuisnummer() {
@@ -47,6 +56,7 @@ public class Adres {
 
     public void setHuisnummer(String huisnummer) {
         this.huisnummer = huisnummer;
+        df.getAdao().update(this);
     }
 
     public String getStraat() {
@@ -55,6 +65,7 @@ public class Adres {
 
     public void setStraat(String straat) {
         this.straat = straat;
+        df.getAdao().update(this);
     }
 
     public String getWoonplaats() {
@@ -63,10 +74,16 @@ public class Adres {
 
     public void setWoonplaats(String woonplaats) {
         this.woonplaats = woonplaats;
+        df.getAdao().update(this);
     }
 
     @Override
     public String toString() {
-        return "id " + id + " | reiziger_id=" + reiziger_id + " | postcode " + postcode + " | huisnummer " + huisnummer + " | straat " + straat + " | woonplaats " + woonplaats + "\n";
+        return "Adres{" +
+                ", postcode='" + postcode + '\'' +
+                ", huisnummer='" + huisnummer + '\'' +
+                ", straat='" + straat + '\'' +
+                ", woonplaats='" + woonplaats + '\'' +
+                '}';
     }
 }

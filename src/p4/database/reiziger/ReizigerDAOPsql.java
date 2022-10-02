@@ -1,6 +1,7 @@
 package p4.database.reiziger;
 
 import p4.database.factory.DAOFactory;
+import p4.database.reiziger.ReizigerDAO;
 import p4.domein.Adres;
 import p4.domein.OVChipkaart;
 import p4.domein.Reiziger;

@@ -1,16 +1,17 @@
-package p4;
+package p5;
 
 
-import p4.database.factory.DAOFactory;
-import p4.domein.Adres;
-import p4.domein.OVChipkaart;
-import p4.domein.Reiziger;
+import p5.database.factory.DAOFactory;
+import p5.database.product.ProductDAO;
+import p5.domein.Adres;
+import p5.domein.OVChipkaart;
+import p5.domein.Product;
+import p5.domein.Reiziger;
 
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class Main {
     static DAOFactory df = DAOFactory.newInstance();
@@ -18,9 +19,10 @@ public class Main {
     public static void main(String[] args) throws SQLException {
         Main main = new Main();
 
-        main.testOVChipkaartDAO();
-        main.testReizigerDAO();
-        main.testAdresDAO();
+//        main.testOVChipkaartDAO();
+//        main.testReizigerDAO();
+//        main.testAdresDAO();
+        main.testProductDAO();
     }
 
     public void testOVChipkaartDAO() {
@@ -52,7 +54,6 @@ public class Main {
         }
 
         System.out.println("[Test] OVChipkaartDAO.findByReiziger() geeft de volgende OVChipkaart(en): ");
-//        Reiziger reiziger = new Reiziger( 10,"G", "van der", "Linden", Date.valueOf("1988-01-27"));
         ArrayList<OVChipkaart> gevondenOVChipkaarten = df.getOvdao().findByReiziger(r1);
 
         for (OVChipkaart ovchip : gevondenOVChipkaarten) {
@@ -157,6 +158,29 @@ public class Main {
         System.out.println(adressen.size() + " aantal adressen, na AdresDAO.delete()\n");
 
         df.getRdao().delete(r1);
+
+    }
+
+    public void testProductDAO() {
+        System.out.println("\n---------- Test ProductDAO -------------");
+
+        System.out.println("[Test] ProductDAO.findAll() geeft de volgende Producten:");
+        List<Product> producten = df.getPdao().findAll();
+        for (Product product : producten) {
+            System.out.println(product);
+        }
+
+//        Product product = producten.get(1);
+//        System.out.println(product.getAlleOvchipkaarten().get(1).getReiziger());
+
+        System.out.println("[Test] ProductDAO.save(), Er staan " + producten.size() + " producten in de database");
+        Product productUtrecht = Product.createNewProduct(7, "Utrecht Travel Ticket", "Onbeperkt reizen door Utrecht.", 26.0);
+        producten = df.getPdao().findAll();
+        System.out.println( "NA ProductDAO.save(), staan er nu " + producten.size() + " producten in de database\n");
+
+        System.out.println("[Test] ProductDAO.delete(), Er staan " + producten.size() + " producten in de database");
+        productUtrecht.deleteProduct();
+
 
     }
 

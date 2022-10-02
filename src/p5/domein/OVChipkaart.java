@@ -1,34 +1,35 @@
 package p5.domein;
 
+import p5.database.factory.DAOFactory;
+
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
 public class OVChipkaart {
-    private int kaart_nummer;
-    private Date geldig_tot;
-    private int klasse;
-    private int saldo;
-    private int reiziger_id;
+    public int kaart_nummer;
+    public Date geldig_tot;
+    public int klasse;
+    public int saldo;
 
-    private Reiziger reiziger;
-    private List<Product> producten = new ArrayList<>();
+    public Reiziger reiziger;
+    public List<Product> alleProducten = new ArrayList<>();
 
+    DAOFactory df = DAOFactory.newInstance();
 
-    public OVChipkaart(int kaart_nummer, Date geldig_tot, int klasse, int saldo, int reiziger_id) {
+    public OVChipkaart(int kaart_nummer, Date geldig_tot, int klasse, int saldo, Reiziger reiziger) {
         this.kaart_nummer = kaart_nummer;
         this.geldig_tot = geldig_tot;
         this.klasse = klasse;
         this.saldo = saldo;
-        this.reiziger_id = reiziger_id;
+        this.reiziger = reiziger;
     }
 
-    public void voegProductToe(Product product) {
-        producten.add(product);
-    }
+    public void addProduct(Product product) {
+        alleProducten.add(product);
+        product.voegOVChipkaartToe(this);
 
-    public void verwijderProduct(Product product) {
-        producten.remove(product);
+        df.getPdao().update(product);
     }
 
     public Reiziger getReiziger() {
@@ -45,6 +46,7 @@ public class OVChipkaart {
 
     public void setKaart_nummer(int kaart_nummer) {
         this.kaart_nummer = kaart_nummer;
+        df.getOvdao().update(this);
     }
 
     public Date getGeldig_tot() {
@@ -53,6 +55,7 @@ public class OVChipkaart {
 
     public void setGeldig_tot(Date geldig_tot) {
         this.geldig_tot = geldig_tot;
+        df.getOvdao().update(this);
     }
 
     public int getKlasse() {
@@ -61,6 +64,7 @@ public class OVChipkaart {
 
     public void setKlasse(int klasse) {
         this.klasse = klasse;
+        df.getOvdao().update(this);
     }
 
     public int getSaldo() {
@@ -69,22 +73,15 @@ public class OVChipkaart {
 
     public void setSaldo(int saldo) {
         this.saldo = saldo;
+        df.getOvdao().update(this);
     }
 
-    public int getReiziger_id() {
-        return reiziger_id;
+    public List<Product> getAlleProducten() {
+        return alleProducten;
     }
 
-    public void setReiziger_id(int reiziger_id) {
-        this.reiziger_id = reiziger_id;
-    }
-
-    public List<Product> getProducten() {
-        return producten;
-    }
-
-    public void setProducten(List<Product> producten) {
-        this.producten = producten;
+    public void setAlleProducten(List<Product> alleProducten) {
+        this.alleProducten = alleProducten;
     }
 
     @Override

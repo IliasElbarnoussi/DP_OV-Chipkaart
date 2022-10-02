@@ -1,5 +1,7 @@
 package p5.domein;
 
+import p5.database.factory.DAOFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +11,8 @@ public class Product {
     private String beschrijving;
     private double prijs;
 
-    private List<OVChipkaart> ovchipkaarten = new ArrayList<>();
+    private List<OVChipkaart> alleOvchipkaarten = new ArrayList<>();
+    static DAOFactory df = DAOFactory.newInstance(); // bij errors maak dit niet meer static
 
     public Product(int product_nummer, String naam, String beschrijving, double prijs) {
         this.product_nummer = product_nummer;
@@ -18,8 +21,24 @@ public class Product {
         this.prijs = prijs;
     }
 
+
+
+    public static Product createNewProduct(int product_nummer, String naam, String beschrijving, double prijs) {
+        Product product = new Product(product_nummer, naam, beschrijving, prijs);
+        df.getPdao().save(product);
+        return product;
+    }
+
+    public void deleteProduct() {
+        for (OVChipkaart ov : getAlleOvchipkaarten()) {
+            ov.getAlleProducten().remove(this);
+        }
+        df.getPdao().delete(this);
+    }
+
     public void voegOVChipkaartToe(OVChipkaart ovChipkaart) {
-        ovchipkaarten.add(ovChipkaart);
+        alleOvchipkaarten.add(ovChipkaart);
+        df.getPdao().update(this);
     }
 
     public int getProduct_nummer() {
@@ -36,6 +55,7 @@ public class Product {
 
     public void setNaam(String naam) {
         this.naam = naam;
+        df.getPdao().update(this);
     }
 
     public String getBeschrijving() {
@@ -44,6 +64,7 @@ public class Product {
 
     public void setBeschrijving(String beschrijving) {
         this.beschrijving = beschrijving;
+        df.getPdao().update(this);
     }
 
     public double getPrijs() {
@@ -52,13 +73,26 @@ public class Product {
 
     public void setPrijs(int prijs) {
         this.prijs = prijs;
+        df.getPdao().update(this);
     }
 
-    public List<OVChipkaart> getOvchipkaarten() {
-        return ovchipkaarten;
+    public List<OVChipkaart> getAlleOvchipkaarten() {
+        return alleOvchipkaarten;
     }
 
-    public void setOvchipkaarten(List<OVChipkaart> ovchipkaarten) {
-        this.ovchipkaarten = ovchipkaarten;
+    public void setAlleOvchipkaarten(List<OVChipkaart> alleOvchipkaarten) {
+        this.alleOvchipkaarten = alleOvchipkaarten;
+        df.getPdao().update(this);
+    }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "product_nummer=" + product_nummer +
+                ", naam='" + naam + '\'' +
+                ", beschrijving='" + beschrijving + '\'' +
+                ", prijs=" + prijs +
+                ", alleOvchipkaarten=" + alleOvchipkaarten +
+                "} \n";
     }
 }
